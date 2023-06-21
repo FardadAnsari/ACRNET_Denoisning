@@ -23,15 +23,24 @@ class Cost2100DataLoader(object):
         channel, nt, nc, nc_expand = 2, 32, 32, 125
 
         # Test data loading, including the sparse data and the raw data
+        # two dimensional 20k,2048 ------> 20k,2,32,32
         data_test = sio.loadmat(dir_test)['HT']
         data_test = torch.tensor(data_test, dtype=torch.float32).view(
             data_test.shape[0], channel, nt, nc)
 
         raw_test = sio.loadmat(dir_raw)['HF_all']
+        # two dimensional ----> 20k,4k ------> raw_test -----> 20k,32,125,2
+
+        # real part 20k,32,125,1
         real = torch.tensor(np.real(raw_test), dtype=torch.float32)
+        # imaginary part 20k,32,125,1
         imag = torch.tensor(np.imag(raw_test), dtype=torch.float32)
+
+
+        # raw_test ------ > 20k,32,125,2
         raw_test = torch.cat((real.view(raw_test.shape[0], nt, nc_expand, 1),
                               imag.view(raw_test.shape[0], nt, nc_expand, 1)), dim=3)
+        #### ------ >
         self.test_dataset = TensorDataset(data_test, raw_test)
 
     def __call__(self):
